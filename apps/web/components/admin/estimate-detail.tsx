@@ -53,8 +53,11 @@ export function EstimateDetailView({ id }: { id: string }) {
       method: 'POST',
       token,
     }),
-    onSuccess: () => {
-      toast.success('Estimate sent (dev log).');
+    onSuccess: (result) => {
+      toast.success(result.message || 'Estimate emailed successfully.');
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to send estimate email.');
     },
   });
 

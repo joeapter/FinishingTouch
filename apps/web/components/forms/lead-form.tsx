@@ -69,8 +69,12 @@ export function LeadForm({ source, title, compact = false }: LeadFormProps) {
         jobAddress: '',
         movingDate: '',
       });
-    } catch {
-      setSubmitError('Could not submit right now. Please try again.');
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : 'Could not submit right now. Please try again.',
+      );
     }
   };
 

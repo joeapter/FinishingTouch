@@ -80,6 +80,32 @@ const errorMessage = (error: unknown): string => {
   return 'Request failed';
 };
 
+const postInternalEmail = async (
+  path: '/api/email/lead' | '/api/email/estimate',
+  payload: unknown,
+) => {
+  const response = await fetch(path, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  let responseBody: { message?: string } | null = null;
+  try {
+    responseBody = (await response.json()) as { message?: string };
+  } catch {
+    responseBody = null;
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      responseBody?.message || `Email request failed with status ${response.status}`,
+    );
+  }
+};
+
 const sequenceFromNumber = (value: string | null | undefined): number => {
   if (!value) {
     return 0;
@@ -298,9 +324,11 @@ const createLead = async (payload: unknown, token?: string) => {
     throw new Error(error.message);
   }
 
-  console.log(
-    `[DEV EMAIL] New lead from ${data.name} <${data.email}> source=${data.source}`,
-  );
+  await postInternalEmail('/api/email/lead', {
+    ...data,
+    movingDate: data.movingDate || undefined,
+    jobAddress: data.jobAddress || undefined,
+  });
 
   return inserted;
 };
@@ -465,9 +493,32 @@ const deleteEstimate = async (id: string, token?: string) => {
   return { ok: true };
 };
 
-const sendEstimate = async (id: string) => {
-  console.log(`[DEV EMAIL] Sending estimate ${id}`);
-  return { ok: true, message: 'Estimate sent (dev log only).' };
+const sendEstimate = async (id: string, token?: string) => {
+  const estimate = await getEstimate(id, token);
+
+  await postInternalEmail('/api/email/estimate', {
+    id: estimate.id,
+    number: estimate.number,
+    movingDate: estimate.movingDate,
+    customerName: estimate.customerName,
+    customerEmail: estimate.customerEmail,
+    customerPhone: estimate.customerPhone,
+    customerJobAddress: estimate.customerJobAddress,
+    subtotal: estimate.subtotal,
+    tax: estimate.tax,
+    total: estimate.total,
+    currencySymbol: estimate.currencySymbol,
+    lineItems: estimate.lineItems.map((item) => ({
+      description: item.description,
+      qty: item.qty,
+      totalPrice: item.totalPrice,
+    })),
+  });
+
+  return {
+    ok: true,
+    message: `Estimate ${estimate.number} emailed to ${estimate.customerEmail}.`,
+  };
 };
 
 const convertEstimateToInvoice = async (id: string, token?: string) => {
@@ -1131,7 +1182,7 @@ export async function apiRequest<T>(
 
     const estimateSendMatch = path.match(/^\/estimates\/([^/]+)\/send$/);
     if (estimateSendMatch && method === 'POST') {
-      return (await sendEstimate(estimateSendMatch[1])) as T;
+      return (await sendEstimate(estimateSendMatch[1], options.token)) as T;
     }
 
     const convertMatch = path.match(/^\/estimates\/([^/]+)\/convert-to-invoice$/);

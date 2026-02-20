@@ -34,6 +34,14 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=replace-with-strong-secret
 NEXT_PUBLIC_CURRENCY_SYMBOL=₪
+SMTP_HOST=smtp.migadu.com
+SMTP_PORT=465
+SMTP_SECURE=true
+SMTP_USER=ac@finishingtouchpainters.com
+SMTP_PASS=replace-with-your-mailbox-password
+EMAIL_FROM="Finishing Touch <ac@finishingtouchpainters.com>"
+EMAIL_TO=ac@finishingtouchpainters.com
+EMAIL_SEND_AUTO_REPLY=true
 ```
 4. Start web:
 ```bash
@@ -69,6 +77,14 @@ Optional role metadata:
 - `NEXTAUTH_URL`
 - `NEXTAUTH_SECRET`
 - `NEXT_PUBLIC_CURRENCY_SYMBOL`
+- `SMTP_HOST`
+- `SMTP_PORT`
+- `SMTP_SECURE`
+- `SMTP_USER`
+- `SMTP_PASS`
+- `EMAIL_FROM`
+- `EMAIL_TO`
+- `EMAIL_SEND_AUTO_REPLY`
 
 ## Deploy
 1. Import repo in Vercel
@@ -83,5 +99,7 @@ Optional role metadata:
 - `pnpm lint`
 
 ## Notes
+- Lead/contact forms now store in Supabase and send mailbox notifications via SMTP.
+- Estimate “Send” now sends a real customer email via SMTP.
 - “Generate PDF” currently opens a print-ready document in a new tab for browser Save as PDF.
 - If you want server-side binary PDF generation again, use legacy API mode or add a serverless PDF route.
