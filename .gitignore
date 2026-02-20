@@ -1,0 +1,20 @@
+# dependencies
+node_modules
+
+# logs
+*.log
+
+# env
+.env
+.env.*
+!.env.example
+
+# build artifacts
+.next
+dist
+coverage
+.turbo
+
+# misc
+.DS_Store
+pnpm-debug.log*

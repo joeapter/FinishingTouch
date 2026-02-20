@@ -1,0 +1,184 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  EMPLOYEE
+}
+
+enum LeadSource {
+  CONTACT
+  REQUEST_ESTIMATE
+}
+
+enum EstimateStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  DECLINED
+  INVOICED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  VOID
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         Role
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  employee     Employee?
+}
+
+model Customer {
+  id        String     @id @default(cuid())
+  name      String
+  phone     String
+  email     String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  estimates Estimate[]
+}
+
+model Lead {
+  id         String     @id @default(cuid())
+  name       String
+  email      String
+  phone      String
+  message    String
+  source     LeadSource
+  jobAddress String?
+  movingDate DateTime?
+  createdAt  DateTime   @default(now())
+}
+
+model Estimate {
+  id                 String           @id @default(cuid())
+  number             String           @unique
+  status             EstimateStatus   @default(DRAFT)
+  movingDate         DateTime
+  customerId         String?
+  customer           Customer?        @relation(fields: [customerId], references: [id])
+  customerName       String
+  customerPhone      String
+  customerEmail      String
+  customerJobAddress String
+  notes              String?
+  subtotal           Int
+  tax                Int
+  total              Int
+  currencySymbol     String           @default("₪")
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  lineItems          EstimateLineItem[]
+  invoice            Invoice?
+  jobs               Job[]
+
+  @@index([status])
+}
+
+model EstimateLineItem {
+  id         String   @id @default(cuid())
+  estimateId String
+  estimate   Estimate @relation(fields: [estimateId], references: [id], onDelete: Cascade)
+  description String
+  qty        Int
+  unitPrice  Int
+  totalPrice Int
+  metadata   Json?
+}
+
+model Invoice {
+  id                     String        @id @default(cuid())
+  number                 String        @unique
+  status                 InvoiceStatus @default(DRAFT)
+  derivedFromEstimateId  String?       @unique
+  derivedFromEstimate    Estimate?     @relation(fields: [derivedFromEstimateId], references: [id])
+  subtotal               Int
+  tax                    Int
+  total                  Int
+  currencySymbol         String        @default("₪")
+  customerName           String
+  customerPhone          String
+  customerEmail          String
+  customerJobAddress     String
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+  lineItems              InvoiceLineItem[]
+
+  @@index([status])
+}
+
+model InvoiceLineItem {
+  id         String   @id @default(cuid())
+  invoiceId  String
+  invoice    Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  description String
+  qty        Int
+  unitPrice  Int
+  totalPrice Int
+  metadata   Json?
+}
+
+model Employee {
+  id           String          @id @default(cuid())
+  userId       String?         @unique
+  user         User?           @relation(fields: [userId], references: [id])
+  name         String
+  phone        String
+  role         Role
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  timeEntries  TimeEntry[]
+  assignments  JobAssignment[]
+}
+
+model TimeEntry {
+  id              String    @id @default(cuid())
+  employeeId      String
+  employee        Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  clockIn         DateTime
+  clockOut        DateTime?
+  durationMinutes Int?
+  createdAt       DateTime  @default(now())
+
+  @@index([employeeId, clockIn])
+}
+
+model Job {
+  id            String          @id @default(cuid())
+  title         String
+  startDateTime DateTime
+  endDateTime   DateTime
+  address       String
+  estimateId    String?
+  estimate      Estimate?       @relation(fields: [estimateId], references: [id])
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  assignments   JobAssignment[]
+
+  @@index([startDateTime])
+}
+
+model JobAssignment {
+  id         String   @id @default(cuid())
+  jobId      String
+  employeeId String
+  job        Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, employeeId])
+}
