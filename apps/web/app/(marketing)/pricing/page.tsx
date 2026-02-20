@@ -6,7 +6,7 @@ const pricingRows = [
   ['Living Room', '₪2,000 each'],
   ['Bathroom', '₪500 each'],
   ['Master Bathroom', '₪750 each'],
-  ['Bedrooms', 'Base ₪100 each (up to 2 beds), +₪500 per bed over 2'],
+  ['Bedrooms', 'Base ₪1,000 each (up to 2 beds), +₪500 per bed over 2'],
 ];
 
 export default function PricingPage() {

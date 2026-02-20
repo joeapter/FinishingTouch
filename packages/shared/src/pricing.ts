@@ -45,10 +45,10 @@ export type PricingSummary = {
 
 export const calculateBedroomPrice = (beds: number): number => {
   if (beds <= 2) {
-    return 100;
+    return 1000;
   }
 
-  return 100 + (beds - 2) * 500;
+  return 1000 + (beds - 2) * 500;
 };
 
 export const normalizeNonNegative = (value: number): number => {

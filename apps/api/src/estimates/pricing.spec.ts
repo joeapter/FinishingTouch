@@ -4,15 +4,15 @@ import {
 } from '@finishing-touch/shared';
 
 describe('Estimate pricing engine', () => {
-  it('calculates bedroom price for up to 2 beds as base 100', () => {
-    expect(calculateBedroomPrice(1)).toBe(100);
-    expect(calculateBedroomPrice(2)).toBe(100);
+  it('calculates bedroom price for up to 2 beds as base 1000', () => {
+    expect(calculateBedroomPrice(1)).toBe(1000);
+    expect(calculateBedroomPrice(2)).toBe(1000);
   });
 
   it('adds 500 per bed beyond 2', () => {
-    // beds=4 => 100 + (2 * 500) = 1100
-    expect(calculateBedroomPrice(4)).toBe(1100);
-    expect(calculateBedroomPrice(6)).toBe(2100);
+    // beds=4 => 1000 + (2 * 500) = 2000
+    expect(calculateBedroomPrice(4)).toBe(2000);
+    expect(calculateBedroomPrice(6)).toBe(3000);
   });
 
   it('computes full estimate totals and bedroom summary', () => {
@@ -26,17 +26,17 @@ describe('Estimate pricing engine', () => {
     });
 
     expect(result.bedroomCount).toBe(2);
-    expect(result.bedroomsTotal).toBe(1200);
-    expect(result.subtotal).toBe(7950);
+    expect(result.bedroomsTotal).toBe(3000);
+    expect(result.subtotal).toBe(9750);
     expect(result.tax).toBe(0);
-    expect(result.total).toBe(7950);
+    expect(result.total).toBe(9750);
 
     const bedroomLine = result.lineItems.find(
       (item) => item.key === 'bedrooms',
     );
     expect(bedroomLine?.description).toBe('Bedrooms (beds: 1,4)');
     expect(bedroomLine?.qty).toBe(2);
-    expect(bedroomLine?.totalPrice).toBe(1200);
+    expect(bedroomLine?.totalPrice).toBe(3000);
   });
 
   it('clamps invalid values and keeps non-negative quantities', () => {
@@ -58,6 +58,6 @@ describe('Estimate pricing engine', () => {
     expect(
       result.lineItems.find((item) => item.key === 'bedrooms')?.description,
     ).toBe('Bedrooms (beds: 1,6)');
-    expect(result.total).toBe(2200);
+    expect(result.total).toBe(4000);
   });
 });
