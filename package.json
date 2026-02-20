@@ -4,7 +4,8 @@
   "version": "0.1.0",
   "packageManager": "pnpm@10.28.2",
   "scripts": {
-    "dev": "pnpm db:up && pnpm --filter @finishing-touch/shared build && pnpm --filter @finishing-touch/api prisma:deploy && pnpm --filter @finishing-touch/api prisma:seed && concurrently -k -n API,WEB -c cyan,magenta \"pnpm --filter @finishing-touch/api start:dev\" \"pnpm --filter @finishing-touch/web dev\"",
+    "dev": "pnpm --filter @finishing-touch/shared build && pnpm --filter @finishing-touch/web dev",
+    "dev:full": "pnpm db:up && pnpm --filter @finishing-touch/shared build && pnpm --filter @finishing-touch/api prisma:deploy && pnpm --filter @finishing-touch/api prisma:seed && concurrently -k -n API,WEB -c cyan,magenta \"pnpm --filter @finishing-touch/api start:dev\" \"pnpm --filter @finishing-touch/web dev\"",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
     "test": "pnpm --filter @finishing-touch/api test",

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { API_BASE_URL } from '@/lib/env';
+import { apiRequest } from '@/lib/api-client';
 
 const formSchema = z.object({
   name: z.string().min(2),
@@ -49,22 +49,15 @@ export function LeadForm({ source, title, compact = false }: LeadFormProps) {
     setSubmitError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/leads`, {
+      await apiRequest('/leads', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+        body: {
           ...values,
           source,
           movingDate: values.movingDate || undefined,
           jobAddress: values.jobAddress || undefined,
-        }),
+        },
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to submit lead');
-      }
 
       setSubmitted(true);
       form.reset({

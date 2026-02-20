@@ -1,8 +1,7 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
-import { credentialsSchema } from '@finishing-touch/shared';
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+import { credentialsSchema, roleSchema } from '@finishing-touch/shared';
+import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@/lib/env';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -17,28 +16,49 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
-        const response = await fetch(`${apiBaseUrl}/api/auth/login`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
+        if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+          return null;
+        }
+
+        const response = await fetch(
+          `${SUPABASE_URL}/auth/v1/token?grant_type=password`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              apikey: SUPABASE_ANON_KEY,
+            },
+            body: JSON.stringify({
+              email: parsed.data.email,
+              password: parsed.data.password,
+            }),
           },
-          body: JSON.stringify(parsed.data),
-        });
+        );
 
         if (!response.ok) {
           return null;
         }
 
         const data = (await response.json()) as {
-          accessToken: string;
-          user: { id: string; email: string; role: 'ADMIN' | 'MANAGER' | 'EMPLOYEE' };
+          access_token: string;
+          user: {
+            id: string;
+            email: string | null;
+            user_metadata?: { role?: unknown };
+          };
         };
+
+        if (!data.access_token || !data.user?.email) {
+          return null;
+        }
+
+        const maybeRole = roleSchema.safeParse(data.user.user_metadata?.role);
 
         return {
           id: data.user.id,
           email: data.user.email,
-          role: data.user.role,
-          accessToken: data.accessToken,
+          role: maybeRole.success ? maybeRole.data : 'ADMIN',
+          accessToken: data.access_token,
         };
       },
     }),
