@@ -80,6 +80,8 @@ const errorMessage = (error: unknown): string => {
   return 'Request failed';
 };
 
+const nowIso = (): string => new Date().toISOString();
+
 const postInternalEmail = async (
   path: '/api/email/lead' | '/api/email/estimate',
   payload: unknown,
@@ -336,6 +338,7 @@ const createLead = async (payload: unknown, token?: string) => {
 const createEstimate = async (payload: unknown, token?: string) => {
   const data = createEstimateSchema.parse(payload);
   const supabase = createSupabaseClient(token);
+  const updatedAt = nowIso();
 
   const pricing = calculateEstimatePricing(data.rooms);
   const number = await nextEstimateNumber(token);
@@ -355,6 +358,7 @@ const createEstimate = async (payload: unknown, token?: string) => {
       .update({
         name: data.customer.name,
         phone: data.customer.phone,
+        updatedAt,
       })
       .eq('id', customerId);
 
@@ -368,6 +372,7 @@ const createEstimate = async (payload: unknown, token?: string) => {
         name: data.customer.name,
         email: data.customer.email,
         phone: data.customer.phone,
+        updatedAt,
       })
       .select('id')
       .single();
@@ -395,6 +400,7 @@ const createEstimate = async (payload: unknown, token?: string) => {
       tax: pricing.tax,
       total: pricing.total,
       currencySymbol: CURRENCY_SYMBOL,
+      updatedAt,
     })
     .select('*')
     .single();
@@ -474,6 +480,7 @@ const updateEstimate = async (id: string, payload: unknown, token?: string) => {
   if (body.notes !== undefined) {
     updateData.notes = body.notes || null;
   }
+  updateData.updatedAt = nowIso();
 
   const { error } = await supabase.from('Estimate').update(updateData).eq('id', id);
   if (error) {
@@ -523,6 +530,7 @@ const sendEstimate = async (id: string, token?: string) => {
 
 const convertEstimateToInvoice = async (id: string, token?: string) => {
   const supabase = createSupabaseClient(token);
+  const updatedAt = nowIso();
 
   const estimate = await getEstimate(id, token);
 
@@ -556,6 +564,7 @@ const convertEstimateToInvoice = async (id: string, token?: string) => {
       customerPhone: estimate.customerPhone,
       customerEmail: estimate.customerEmail,
       customerJobAddress: estimate.customerJobAddress,
+      updatedAt,
     })
     .select('*')
     .single();
@@ -583,7 +592,7 @@ const convertEstimateToInvoice = async (id: string, token?: string) => {
 
   const { error: updateError } = await supabase
     .from('Estimate')
-    .update({ status: 'INVOICED' })
+    .update({ status: 'INVOICED', updatedAt })
     .eq('id', id);
 
   if (updateError) {
@@ -637,7 +646,10 @@ const updateInvoice = async (id: string, payload: unknown, token?: string) => {
 
   const { error } = await supabase
     .from('Invoice')
-    .update({ status: body.status ? invoiceStatusSchema.parse(body.status) : undefined })
+    .update({
+      status: body.status ? invoiceStatusSchema.parse(body.status) : undefined,
+      updatedAt: nowIso(),
+    })
     .eq('id', id);
 
   if (error) {
@@ -677,7 +689,10 @@ const createEmployee = async (payload: unknown, token?: string) => {
 
   const { data: inserted, error } = await supabase
     .from('Employee')
-    .insert(data)
+    .insert({
+      ...data,
+      updatedAt: nowIso(),
+    })
     .select('*')
     .single();
 
@@ -692,7 +707,10 @@ const updateEmployee = async (id: string, payload: unknown, token?: string) => {
   const supabase = createSupabaseClient(token);
   const { error } = await supabase
     .from('Employee')
-    .update(payload as DbRow)
+    .update({
+      ...(payload as DbRow),
+      updatedAt: nowIso(),
+    })
     .eq('id', id);
 
   if (error) {
@@ -903,6 +921,7 @@ const listJobs = async (params: URLSearchParams, token?: string) => {
 const createJob = async (payload: unknown, token?: string) => {
   const data = createJobSchema.parse(payload);
   const supabase = createSupabaseClient(token);
+  const updatedAt = nowIso();
 
   const { data: job, error } = await supabase
     .from('Job')
@@ -912,6 +931,7 @@ const createJob = async (payload: unknown, token?: string) => {
       startDateTime: new Date(data.startDateTime).toISOString(),
       endDateTime: new Date(data.endDateTime).toISOString(),
       estimateId: data.estimateId || null,
+      updatedAt,
     })
     .select('*')
     .single();
@@ -944,6 +964,7 @@ const createJobFromEstimate = async (
 ) => {
   const body = (payload as { employeeIds?: string[] }) || {};
   const supabase = createSupabaseClient(token);
+  const updatedAt = nowIso();
 
   const estimate = await getEstimate(estimateId, token);
 
@@ -964,6 +985,7 @@ const createJobFromEstimate = async (
       startDateTime: start.toISOString(),
       endDateTime: end.toISOString(),
       estimateId,
+      updatedAt,
     })
     .select('*')
     .single();

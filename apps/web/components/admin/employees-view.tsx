@@ -52,7 +52,7 @@ export function EmployeesView() {
       apiRequest<Employee>('/employees', {
         method: 'POST',
         token,
-        body: { name, phone, role },
+        body: { name: name.trim(), phone: phone.trim(), role },
       }),
     onSuccess: () => {
       toast.success('Employee created');
@@ -60,6 +60,9 @@ export function EmployeesView() {
       setPhone('');
       setRole('EMPLOYEE');
       queryClient.invalidateQueries({ queryKey: ['employees'] });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to create employee');
     },
   });
 
@@ -94,7 +97,10 @@ export function EmployeesView() {
     },
   });
 
-  const canCreate = useMemo(() => name.trim().length > 1 && phone.trim().length > 5, [name, phone]);
+  const canCreate = useMemo(
+    () => Boolean(token) && name.trim().length > 1 && phone.trim().length > 5,
+    [name, phone, token],
+  );
 
   return (
     <div className="space-y-5">
@@ -120,7 +126,10 @@ export function EmployeesView() {
             </Select>
           </div>
           <div className="sm:col-span-4">
-            <Button onClick={() => createMutation.mutate()} disabled={!canCreate || createMutation.isPending}>
+            <Button
+              onClick={() => createMutation.mutate()}
+              disabled={!canCreate || createMutation.isPending}
+            >
               Create Employee
             </Button>
           </div>
