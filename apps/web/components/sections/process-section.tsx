@@ -2,17 +2,17 @@ const steps = [
   {
     title: '1. Request Estimate',
     description:
-      'Share move date, address, and room details. We return a structured estimate quickly.',
+      'Share your move-out date, address, and room details. We return a structured estimate quickly.',
   },
   {
     title: '2. Confirm Schedule',
     description:
-      'Once accepted, we lock in the job on calendar and assign your painting crew.',
+      'Once accepted, we lock in a time that matches your key-return schedule.',
   },
   {
-    title: '3. Turnover Complete',
+    title: '3. Ready for Handover',
     description:
-      'We finish on schedule so the unit is ready for cleaning, showings, and move-in.',
+      'We finish on schedule so the apartment is clean, painted, and ready for landlord inspection.',
   },
 ];
 

@@ -2,19 +2,19 @@ import { PageHero } from '@/components/sections/page-hero';
 
 const services = [
   {
-    title: 'Apartment Turnover Painting',
+    title: 'Move-Out Repainting',
     description:
-      'Complete interior repainting between tenants with quick scheduling and clean handoff.',
+      'Complete interior repainting before key return, with quick scheduling and clean execution.',
   },
   {
-    title: 'Room-by-Room Refresh',
+    title: 'Room-by-Room Packages',
     description:
-      'Target only the rooms that need work while preserving speed and finish consistency.',
+      'Paint only the rooms that need work while keeping finish quality consistent throughout.',
   },
   {
-    title: 'Move-In Ready Detailing',
+    title: 'Handover-Ready Detailing',
     description:
-      'Final touch-ups, trim refresh, and quality checks before keys are handed over.',
+      'Final touch-ups, trim refresh, and quality checks so your apartment is ready for inspection.',
   },
 ];
 
@@ -23,8 +23,8 @@ export default function ServicesPage() {
     <>
       <PageHero
         eyebrow="Services"
-        title="Painting services built for rental turnover"
-        description="Our process is optimized for property managers and owners handling fast apartment transitions."
+        title="Painting services built for tenants in Israel"
+        description="Our process is optimized for renters who must repaint before handing back the apartment."
       />
 
       <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6">

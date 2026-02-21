@@ -5,21 +5,20 @@ export default function AboutPage() {
     <>
       <PageHero
         eyebrow="About"
-        title="Focused on apartment turnover painting"
-        description="Finishing Touch helps rental owners and managers keep units move-in ready with dependable painting crews."
+        title="Focused on tenant move-out repainting"
+        description="Finishing Touch helps tenants across Israel return rental apartments freshly painted and ready for handover."
       />
 
       <section className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
         <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <p className="text-sm leading-relaxed text-slate-700 sm:text-base">
-            We work specifically on rental apartment turnovers where timing matters. Our teams are
-            trained to move quickly while maintaining clean prep, smooth finishes, and reliable
-            communication.
+            In Israel, tenants are often responsible for repainting before leaving a rental.
+            Finishing Touch is built for that exact moment: fast timelines, clean prep, smooth
+            finishes, and reliable communication.
           </p>
           <p className="text-sm leading-relaxed text-slate-700 sm:text-base">
-            Whether you manage one building or many units across the city, we provide a clear
-            estimate process, practical scheduling, and quality standards tailored to move-in
-            readiness.
+            Whether you are a single tenant, a family, or roommates moving out, we provide clear
+            pricing, practical scheduling, and quality standards tailored to landlord handover.
           </p>
         </div>
       </section>

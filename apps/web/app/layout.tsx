@@ -15,9 +15,9 @@ const notoSerif = Noto_Serif({
 });
 
 export const metadata: Metadata = {
-  title: 'Finishing Touch | Turnover Painting',
+  title: 'Finishing Touch | Move-Out Painting',
   description:
-    'Finishing Touch provides professional turnover painting for rental apartments.',
+    'Finishing Touch provides tenant-focused move-out painting for rental apartments in Israel.',
 };
 
 export default function RootLayout({

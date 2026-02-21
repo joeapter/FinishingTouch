@@ -1,18 +1,18 @@
 const testimonials = [
   {
     quote:
-      'They repainted three units in one week and hit every turnover deadline.',
-    author: 'Property Manager, North District Rentals',
+      'We had four days before key handover and they finished the repaint right on time.',
+    author: 'Tenant, Tel Aviv',
   },
   {
     quote:
       'Pricing was clear and matched the final invoice exactly.',
-    author: 'Leasing Operations Coordinator',
+    author: 'Tenant, Haifa',
   },
   {
     quote:
-      'Communication was excellent from estimate to completion photos.',
-    author: 'Owner, Urban Stay Apartments',
+      'Communication was excellent from estimate to final touch-ups.',
+    author: 'Family Apartment Tenant, Jerusalem',
   },
 ];
 
@@ -21,7 +21,7 @@ export function TestimonialsSection() {
     <section className="bg-slate-950 py-14 text-white">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          Trusted by rental operators
+          Trusted by tenants across Israel
         </h2>
         <div className="mt-6 grid gap-4 md:grid-cols-3">
           {testimonials.map((item) => (

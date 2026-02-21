@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { calculateEstimatePricing } from '@finishing-touch/shared';
+import { calculateBedroomPrice, calculateEstimatePricing } from '@finishing-touch/shared';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -42,15 +42,48 @@ const wizardSchema = z.object({
 });
 
 const steps = ['Customer', 'Rooms', 'Review'];
+type PricingLineItem = ReturnType<typeof calculateEstimatePricing>['lineItems'][number];
 
 function money(value: number) {
   return `${CURRENCY_SYMBOL}${value.toLocaleString()}`;
+}
+
+function toInteger(value: unknown, fallback = 0): number {
+  const numeric = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(numeric)) {
+    return fallback;
+  }
+
+  return Math.floor(numeric);
+}
+
+function toNonNegativeInt(value: unknown): number {
+  return Math.max(0, toInteger(value, 0));
+}
+
+function lineItemMath(item: PricingLineItem) {
+  if (item.key === 'bedrooms') {
+    const beds = Array.isArray(item.metadata?.beds)
+      ? item.metadata.beds.filter((value): value is number => typeof value === 'number')
+      : [];
+
+    if (beds.length === 0) {
+      return 'No bedrooms selected';
+    }
+
+    return beds
+      .map((bedCount) => `${bedCount} bed${bedCount === 1 ? '' : 's'} = ${money(calculateBedroomPrice(bedCount))}`)
+      .join(' + ');
+  }
+
+  return `${item.qty} x ${money(item.unitPrice)}`;
 }
 
 export function EstimateWizard() {
   const router = useRouter();
   const { data: session } = useSession();
   const [step, setStep] = useState(0);
+  const [roomsStepError, setRoomsStepError] = useState<string | null>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(wizardSchema),
@@ -104,16 +137,22 @@ export function EstimateWizard() {
 
   const watchedRooms = form.watch('rooms');
 
-  const pricing = useMemo(() => {
-    return calculateEstimatePricing({
-      kitchenQty: watchedRooms.kitchenQty,
-      diningRoomQty: watchedRooms.diningRoomQty,
-      livingRoomQty: watchedRooms.livingRoomQty,
-      bathroomsQty: watchedRooms.bathroomsQty,
-      masterBathroomsQty: watchedRooms.masterBathroomsQty,
-      bedrooms: watchedRooms.bedrooms,
-    });
-  }, [watchedRooms]);
+  const pricing = calculateEstimatePricing({
+    kitchenQty: toNonNegativeInt(watchedRooms.kitchenQty),
+    diningRoomQty: toNonNegativeInt(watchedRooms.diningRoomQty),
+    livingRoomQty: toNonNegativeInt(watchedRooms.livingRoomQty),
+    bathroomsQty: toNonNegativeInt(watchedRooms.bathroomsQty),
+    masterBathroomsQty: toNonNegativeInt(watchedRooms.masterBathroomsQty),
+    bedrooms: (watchedRooms.bedrooms || []).map((bedroom) => ({
+      beds: Math.min(6, Math.max(1, toInteger(bedroom?.beds, 1))),
+    })),
+  });
+
+  useEffect(() => {
+    if (pricing.subtotal > 0 && roomsStepError) {
+      setRoomsStepError(null);
+    }
+  }, [pricing.subtotal, roomsStepError]);
 
   const mutation = useMutation({
     mutationFn: async (values: FormValues) => {
@@ -173,6 +212,11 @@ export function EstimateWizard() {
       if (!valid) {
         return;
       }
+
+      if (pricing.subtotal <= 0) {
+        setRoomsStepError('Add at least one room before continuing.');
+        return;
+      }
     }
 
     setStep((current) => Math.min(current + 1, steps.length - 1));
@@ -201,7 +245,13 @@ export function EstimateWizard() {
         <CardContent>
           <form onSubmit={form.handleSubmit((values) => mutation.mutate(values))}>
             {step === 0 ? <CustomerStep form={form} /> : null}
-            {step === 1 ? <RoomsStep form={form} fields={fields.length} /> : null}
+            {step === 1 ? (
+              <RoomsStep
+                form={form}
+                fields={fields.length}
+                errorMessage={roomsStepError}
+              />
+            ) : null}
             {step === 2 ? <ReviewStep form={form} pricing={pricing} /> : null}
 
             <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-between">
@@ -234,7 +284,10 @@ export function EstimateWizard() {
         <CardContent className="space-y-2 text-sm">
           {pricing.lineItems.map((item) => (
             <div key={item.key} className="flex items-center justify-between">
-              <span className="text-slate-600">{item.description}</span>
+              <div className="min-w-0">
+                <p className="text-slate-600">{item.description}</p>
+                <p className="text-xs text-slate-500">{lineItemMath(item)}</p>
+              </div>
               <span className="font-medium text-slate-900">{money(item.totalPrice)}</span>
             </div>
           ))}
@@ -307,12 +360,15 @@ function CustomerStep({
 function RoomsStep({
   form,
   fields,
+  errorMessage,
 }: {
   form: ReturnType<typeof useForm<FormValues>>;
   fields: number;
+  errorMessage: string | null;
 }) {
   return (
     <div className="grid gap-4">
+      {errorMessage ? <ErrorText message={errorMessage} /> : null}
       <RoomQtyInput form={form} name="rooms.kitchenQty" label="Kitchen Qty" />
       <RoomQtyInput form={form} name="rooms.diningRoomQty" label="Dining Room Qty" />
       <RoomQtyInput form={form} name="rooms.livingRoomQty" label="Living Room Qty" />
@@ -338,7 +394,7 @@ function RoomsStep({
                   min={1}
                   max={6}
                   {...form.register(`rooms.bedrooms.${index}.beds`, {
-                    valueAsNumber: true,
+                    setValueAs: (value) => Math.min(6, Math.max(1, toInteger(value, 1))),
                   })}
                   className="h-12"
                 />
@@ -379,9 +435,12 @@ function ReviewStep({
         <h3 className="text-sm font-semibold text-slate-700">Line items</h3>
         <ul className="mt-2 space-y-2 text-sm text-slate-600">
           {pricing.lineItems.map((item) => (
-            <li key={item.key} className="flex justify-between rounded-md bg-slate-50 px-3 py-2">
-              <span>{item.description}</span>
-              <span>{money(item.totalPrice)}</span>
+            <li key={item.key} className="flex justify-between gap-4 rounded-md bg-slate-50 px-3 py-2">
+              <div className="min-w-0">
+                <p>{item.description}</p>
+                <p className="text-xs text-slate-500">{lineItemMath(item)}</p>
+              </div>
+              <span className="shrink-0">{money(item.totalPrice)}</span>
             </li>
           ))}
         </ul>
@@ -413,7 +472,7 @@ function RoomQtyInput({
         type="number"
         min={0}
         {...form.register(name, {
-          valueAsNumber: true,
+          setValueAs: (value) => toNonNegativeInt(value),
         })}
         className="h-12"
       />

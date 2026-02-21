@@ -8,14 +8,14 @@ export function HomeHero() {
       <div className="mx-auto grid max-w-6xl gap-8 px-4 sm:px-6 md:grid-cols-2 md:items-center">
         <div>
           <p className="inline-flex rounded-full bg-teal-100 px-3 py-1 text-xs font-semibold tracking-wide text-teal-800">
-            Turnover Painting for Rental Apartments
+            Move-Out Repainting for Tenants in Israel
           </p>
           <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-            Fast, clean repainting between tenants.
+            Return your apartment freshly painted.
           </h1>
           <p className="mt-4 max-w-xl text-base leading-relaxed text-slate-600 sm:text-lg">
-            Finishing Touch handles apartment turnover painting with predictable
-            pricing, tight scheduling, and reliable crews.
+            Finishing Touch helps tenants across Israel repaint before key handover
+            with predictable room-based pricing, fast scheduling, and clean results.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link href="/contact">
@@ -32,8 +32,8 @@ export function HomeHero() {
         <div className="grid gap-3">
           <FeatureCard
             icon={<Clock4 className="h-5 w-5 text-teal-700" />}
-            title="24-48h Turnover"
-            description="Designed around move-out and move-in windows."
+            title="Fast Move-Out Scheduling"
+            description="Built around your moving date and key-return deadline."
           />
           <FeatureCard
             icon={<Paintbrush className="h-5 w-5 text-teal-700" />}
@@ -42,8 +42,8 @@ export function HomeHero() {
           />
           <FeatureCard
             icon={<Building2 className="h-5 w-5 text-teal-700" />}
-            title="Rental Specialists"
-            description="Focused on apartments, not large commercial projects."
+            title="Tenant Specialists"
+            description="Focused on rented apartments, not large commercial projects."
           />
         </div>
       </div>

@@ -15,7 +15,7 @@ export default function PricingPage() {
       <PageHero
         eyebrow="Pricing"
         title="Transparent room-based pricing"
-        description="No public auto-quote. We use this structure to prepare formal estimates after reviewing your job details."
+        description="No public auto-quote. We use this structure to prepare formal estimates for tenant move-out repainting."
       />
 
       <section className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
