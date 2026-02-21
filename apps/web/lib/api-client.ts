@@ -82,6 +82,14 @@ const errorMessage = (error: unknown): string => {
 
 const nowIso = (): string => new Date().toISOString();
 
+const rowId = (): string => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
+};
+
 const postInternalEmail = async (
   path: '/api/email/lead' | '/api/email/estimate',
   payload: unknown,
@@ -315,6 +323,7 @@ const createLead = async (payload: unknown, token?: string) => {
   const { data: inserted, error } = await supabase
     .from('Lead')
     .insert({
+      id: rowId(),
       ...data,
       movingDate: data.movingDate || null,
       jobAddress: data.jobAddress || null,
@@ -369,6 +378,7 @@ const createEstimate = async (payload: unknown, token?: string) => {
     const { data: createdCustomer, error: customerError } = await supabase
       .from('Customer')
       .insert({
+        id: rowId(),
         name: data.customer.name,
         email: data.customer.email,
         phone: data.customer.phone,
@@ -387,6 +397,7 @@ const createEstimate = async (payload: unknown, token?: string) => {
   const { data: estimate, error: estimateError } = await supabase
     .from('Estimate')
     .insert({
+      id: rowId(),
       number,
       status: 'DRAFT',
       movingDate: new Date(data.movingDate).toISOString(),
@@ -413,6 +424,7 @@ const createEstimate = async (payload: unknown, token?: string) => {
 
   const { error: lineItemError } = await supabase.from('EstimateLineItem').insert(
     pricing.lineItems.map((item) => ({
+      id: rowId(),
       estimateId,
       description: item.description,
       qty: item.qty,
@@ -553,6 +565,7 @@ const convertEstimateToInvoice = async (id: string, token?: string) => {
   const { data: invoice, error: invoiceError } = await supabase
     .from('Invoice')
     .insert({
+      id: rowId(),
       number,
       status: 'DRAFT',
       derivedFromEstimateId: estimate.id,
@@ -577,6 +590,7 @@ const convertEstimateToInvoice = async (id: string, token?: string) => {
 
   const { error: lineError } = await supabase.from('InvoiceLineItem').insert(
     (estimate.lineItems || []).map((item) => ({
+      id: rowId(),
       invoiceId,
       description: item.description,
       qty: item.qty,
@@ -690,6 +704,7 @@ const createEmployee = async (payload: unknown, token?: string) => {
   const { data: inserted, error } = await supabase
     .from('Employee')
     .insert({
+      id: rowId(),
       ...data,
       updatedAt: nowIso(),
     })
@@ -836,6 +851,7 @@ const punchClock = async (payload: unknown, token?: string) => {
     const { data: inserted, error } = await supabase
       .from('TimeEntry')
       .insert({
+        id: rowId(),
         employeeId: body.employeeId,
         clockIn: new Date().toISOString(),
       })
@@ -926,6 +942,7 @@ const createJob = async (payload: unknown, token?: string) => {
   const { data: job, error } = await supabase
     .from('Job')
     .insert({
+      id: rowId(),
       title: data.title,
       address: data.address,
       startDateTime: new Date(data.startDateTime).toISOString(),
@@ -943,6 +960,7 @@ const createJob = async (payload: unknown, token?: string) => {
   if (data.employeeIds.length) {
     const { error: assignmentError } = await supabase.from('JobAssignment').insert(
       data.employeeIds.map((employeeId) => ({
+        id: rowId(),
         jobId: (job as DbRow & { id: string }).id,
         employeeId,
       })),
@@ -980,6 +998,7 @@ const createJobFromEstimate = async (
   const { data: job, error } = await supabase
     .from('Job')
     .insert({
+      id: rowId(),
       title: `Turnover Painting - ${estimate.customerName}`,
       address: estimate.customerJobAddress,
       startDateTime: start.toISOString(),
@@ -997,6 +1016,7 @@ const createJobFromEstimate = async (
   if (body.employeeIds?.length) {
     const { error: assignmentError } = await supabase.from('JobAssignment').insert(
       body.employeeIds.map((employeeId) => ({
+        id: rowId(),
         jobId: (job as DbRow & { id: string }).id,
         employeeId,
       })),
