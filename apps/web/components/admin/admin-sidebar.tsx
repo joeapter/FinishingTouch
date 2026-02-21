@@ -35,7 +35,10 @@ export function AdminSidebar() {
       <nav className="grid gap-1 px-3 pb-4 lg:px-4">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+          const active =
+            item.href === '/admin'
+              ? pathname === '/admin'
+              : pathname === item.href || pathname.startsWith(`${item.href}/`);
 
           return (
             <Link
@@ -44,12 +47,17 @@ export function AdminSidebar() {
               className={cn(
                 'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition',
                 active
-                  ? 'bg-slate-900 text-white'
+                  ? 'bg-slate-900 text-white hover:bg-slate-900'
                   : 'text-slate-700 hover:bg-slate-100',
               )}
             >
-              <Icon className="h-4 w-4" />
-              {item.label}
+              <Icon
+                className={cn(
+                  'h-4 w-4',
+                  active ? 'text-white' : 'text-slate-600',
+                )}
+              />
+              <span className={active ? 'text-white' : undefined}>{item.label}</span>
             </Link>
           );
         })}
